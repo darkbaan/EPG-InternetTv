@@ -1,6 +1,7 @@
 package se.kmdev.tvepg.epg;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -34,10 +35,8 @@ import se.kmdev.tvepg.epg.misc.EPGUtil;
  */
 public class EPGoneDay extends ViewGroup {
 
-    public final String TAG = getClass().getSimpleName();
-    public static final int START_TIME = 0;        // 0H
     public static final int END_TIME = 24 * 60 * 60 * 1000;     // 24H
-    public static final int HOURS_IN_VIEWPORT_MILLIS = 2 * 60 * 60 * 1000;     // 2 hours
+    public static final int HOURS_IN_VIEWPORT_MILLIS = 60 * 60 * 1000;     // 1 hours
     public static final int TIME_LABEL_SPACING_MILLIS = 30 * 60 * 1000;        // 30 minutes
     public static final int TIME_SPACING_MILLIS = 15 * 60 * 1000; // 15 MINUTES
 
@@ -105,7 +104,7 @@ public class EPGoneDay extends ViewGroup {
 
         // Adding some friction that makes the epg less flappy.
         mScroller = new Scroller(context);
-        mScroller.setFriction(0.2f);
+        mScroller.setFriction(0.4f);
 
         mEPGBackground = getResources().getColor(R.color.epg_background);
 
@@ -677,4 +676,5 @@ public class EPGoneDay extends ViewGroup {
         Resources r = getResources();
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
     }
+
 }
