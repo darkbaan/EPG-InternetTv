@@ -1,7 +1,6 @@
 package se.kmdev.tvepg.epg;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -36,8 +35,8 @@ import se.kmdev.tvepg.epg.misc.EPGUtil;
 public class EPGoneDay extends ViewGroup {
 
     public static final int END_TIME = 24 * 60 * 60 * 1000;     // 24H
-    public static final int HOURS_IN_VIEWPORT_MILLIS = 60 * 60 * 1000;     // 1 hours
-    public static final int TIME_LABEL_SPACING_MILLIS = 30 * 60 * 1000;        // 30 minutes
+    public static final int HOURS_IN_VIEWPORT_MILLIS = 70 * 60 * 1000;     // 1 hour 10 minutes
+    public static final int TIME_LABEL_SPACING_MILLIS = 60 * 60 * 1000;        // 1 hour
     public static final int TIME_SPACING_MILLIS = 15 * 60 * 1000; // 15 MINUTES
 
     private final Rect mClipRect;
@@ -54,15 +53,18 @@ public class EPGoneDay extends ViewGroup {
     private final int mChannelLayoutWidth;
     private final int mChannelLayoutBackground;
     private final int mEventLayoutBackground;
-    private final int mEventLayoutBackgroundCurrent;
     private final int mEventLayoutTextColor;
     private final int mEventLayoutTextSize;
+    private final int mEventLayoutBackgroundCurrent;
+    private final int mEventLayoutTextColorCurrent;
+    private final int mEventLayoutTextTimeColorCurrent;
     private final int mTimeBarLineWidth;
     private final int mTimeBarLineColor;
     private final int mTimeBarHeight;
     private final int mTimeBarTextSize;
-    private final int mEventLayoutTimeTextColor;
+    private final int mEventLayoutTextTimeColor;
     private final int mEventLayoutTimeTextSize;
+    private final int mTimeLayoutColor;
 
 
     private final int mEPGBackground;
@@ -107,9 +109,10 @@ public class EPGoneDay extends ViewGroup {
         mScroller.setFriction(0.4f);
 
         mEPGBackground = getResources().getColor(R.color.epg_background);
+        mTimeLayoutColor = getResources().getColor(R.color.epg_time_line_color);
 
         mEventLayoutPadding = getResources().getDimensionPixelSize(R.dimen.epg_event_layout_padding);
-        mEventLayoutTimeTextColor = getResources().getColor(R.color.epg_event_layout_time_text);
+        mEventLayoutTextTimeColor = getResources().getColor(R.color.epg_event_layout_time_text);
         mEventLayoutTimeTextSize = getResources().getDimensionPixelSize(R.dimen.epg_event_layout_time_text);
 
         mChannelLayoutMargin = getResources().getDimensionPixelSize(R.dimen.epg_channel_layout_margin);
@@ -119,9 +122,13 @@ public class EPGoneDay extends ViewGroup {
         mChannelLayoutBackground = getResources().getColor(R.color.epg_channel_layout_background);
 
         mEventLayoutBackground = getResources().getColor(R.color.epg_event_layout_background);
-        mEventLayoutBackgroundCurrent = getResources().getColor(R.color.epg_event_layout_background_current);
         mEventLayoutTextColor = getResources().getColor(R.color.epg_event_layout_text);
         mEventLayoutTextSize = getResources().getDimensionPixelSize(R.dimen.epg_event_layout_text);
+
+        mEventLayoutBackgroundCurrent = getResources().getColor(R.color.epg_event_layout_background_current);
+        mEventLayoutTextTimeColorCurrent = getResources().getColor(R.color.epg_event_layout_time_text_current);
+        mEventLayoutTextColorCurrent = getResources().getColor(R.color.epg_event_layout_text_current);
+
 
         mTimeBarHeight = getResources().getDimensionPixelSize(R.dimen.epg_time_bar_height);
         mTimeBarTextSize = getResources().getDimensionPixelSize(R.dimen.epg_time_bar_text);
@@ -195,23 +202,11 @@ public class EPGoneDay extends ViewGroup {
         canvas.clipRect(mClipRect);
 
         // Background
-        mPaint.setColor(mChannelLayoutBackground);
+        mPaint.setColor(mTimeLayoutColor);
         canvas.drawRect(drawingRect, mPaint);
 
         // Time stamps
         mPaint.setColor(mEventLayoutTextColor);
-        mPaint.setTextSize(mTimeBarTextSize);
-
-        for (int i = 0; i < HOURS_IN_VIEWPORT_MILLIS / TIME_LABEL_SPACING_MILLIS; i++) {
-            // Get time and round to nearest half hour
-            final long time = TIME_LABEL_SPACING_MILLIS *
-                    (((mTimeLowerBoundary + (TIME_LABEL_SPACING_MILLIS * i)) +
-                            (TIME_LABEL_SPACING_MILLIS / 2)) / TIME_LABEL_SPACING_MILLIS);
-
-            canvas.drawText(" " + EPGUtil.getShortTime(time),
-                    getXFrom(time),
-                    drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)), mPaint);
-        }
 
         for (int i = 0; i < HOURS_IN_VIEWPORT_MILLIS / TIME_SPACING_MILLIS; i++) {
             // Get time and round to nearest half hour
@@ -220,14 +215,23 @@ public class EPGoneDay extends ViewGroup {
                             (TIME_SPACING_MILLIS / 2)) / TIME_SPACING_MILLIS);
 
             if (time % TIME_LABEL_SPACING_MILLIS == 0) {
+                mPaint.setTextSize(mTimeBarTextSize);
                 canvas.drawText("|",
-                        getXFrom(time),
+                        getXFrom(time) - dptopx(2),
                         drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(12), mPaint);
-            } else {
 
+                canvas.drawText(EPGUtil.getShortHour(time),
+                        getXFrom(time) - dptopx(2),
+                        drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) + dptopx(4), mPaint);
+            } else {
+                mPaint.setTextSize(0.8f*mTimeBarTextSize);
                 canvas.drawText("|",
-                        getXFrom(time),
+                        getXFrom(time) - dptopx(2),
                         drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(18), mPaint);
+
+                canvas.drawText(EPGUtil.getShortMin(time),
+                        getXFrom(time) - dptopx(5),
+                        drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(4), mPaint);
             }
         }
 
@@ -244,7 +248,7 @@ public class EPGoneDay extends ViewGroup {
         drawingRect.bottom = drawingRect.top + mTimeBarHeight;
 
         // Background
-        mPaint.setColor(mChannelLayoutBackground);
+        mPaint.setColor(mTimeLayoutColor);
         canvas.drawRect(drawingRect, mPaint);
 
         // Text
@@ -320,7 +324,7 @@ public class EPGoneDay extends ViewGroup {
         drawingRect.right -= mEventLayoutPadding;
 
         // Text title
-        mPaint.setColor(mEventLayoutTextColor);
+        mPaint.setColor(event.isCurrent() ? mEventLayoutTextColorCurrent : mEventLayoutTextColor);
         mPaint.setTextSize(mEventLayoutTextSize);
 
         // Move drawing.top so text will be centered (text is drawn bottom>up)
@@ -333,13 +337,13 @@ public class EPGoneDay extends ViewGroup {
         canvas.drawText(title, drawingRect.left, drawingRect.top, mPaint);
 
         // Text time
-        mPaint.setColor(mEventLayoutTimeTextColor);
+        mPaint.setColor(event.isCurrent() ? mEventLayoutTextTimeColorCurrent : mEventLayoutTextTimeColor);
         mPaint.setTextSize(mEventLayoutTimeTextSize);
 
         String time = EPGUtil.getShortTime(event.getStart()) + "-" + EPGUtil.getShortTime(event.getEnd());
         time = time.substring(0,
                 mPaint.breakText(time, true, drawingRect.right - drawingRect.left, null));
-        canvas.drawText(time, drawingRect.left, drawingRect.top + dptopx(28), mPaint);
+        canvas.drawText(time, drawingRect.left, drawingRect.top + dptopx(22), mPaint);
 
     }
 
@@ -370,6 +374,9 @@ public class EPGoneDay extends ViewGroup {
         drawingRect.top = getTopFrom(position);
         drawingRect.right = drawingRect.left + mChannelLayoutWidth;
         drawingRect.bottom = drawingRect.top + mChannelLayoutHeight;
+
+        mPaint.setColor(getResources().getColor(R.color.white));
+        canvas.drawRect(drawingRect, mPaint);
 
         // Loading channel image into target for
         final String imageURL = epgData.getChannel(position).getImageURL();
@@ -463,8 +470,8 @@ public class EPGoneDay extends ViewGroup {
         int position = (y + screenHeight + mTimeBarHeight - mChannelLayoutMargin)
                 / (mChannelLayoutHeight + mChannelLayoutMargin);
 
-        if (position > totalChannelCount - 1) {
-            position = totalChannelCount - 1;
+        if (position > totalChannelCount) {
+            position = totalChannelCount;
         }
 
         // Add one extra row if we don't fill screen with current..
@@ -527,19 +534,23 @@ public class EPGoneDay extends ViewGroup {
         int channelPosition = (y + mChannelLayoutMargin)
                 / (mChannelLayoutHeight + mChannelLayoutMargin);
 
-        return epgData.getChannelCount() == 0 ? -1 : channelPosition;
+        if (epgData.getChannelCount() > channelPosition) {
+            return epgData.getChannelCount() == 0 ? -1 : channelPosition;
+        } else return -1;
     }
 
     private int getProgramPosition(int channelPosition, long time) {
-        List<EPGEvent> events = epgData.getEvents(channelPosition);
+        if (channelPosition < epgData.getChannelCount()) {
+            List<EPGEvent> events = epgData.getEvents(channelPosition);
 
-        if (events != null) {
+            if (events != null) {
 
-            for (int eventPos = 0; eventPos < events.size(); eventPos++) {
-                EPGEvent event = events.get(eventPos);
+                for (int eventPos = 0; eventPos < events.size(); eventPos++) {
+                    EPGEvent event = events.get(eventPos);
 
-                if (event.getStart() <= time && event.getEnd() >= time) {
-                    return eventPos;
+                    if (event.getStart() <= time && event.getEnd() >= time) {
+                        return eventPos;
+                    }
                 }
             }
         }

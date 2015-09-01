@@ -27,6 +27,16 @@ public class EPGUtil {
         return hour + ":" + min;
     }
 
+    public static String getShortHour(long timeMillis) {
+        int hour = (int) (timeMillis / 1000 / 60 / 60) % 24;
+        return hour + "h";
+    }
+
+    public static String getShortMin(long timeMillis) {
+        int min = (int) (timeMillis / 1000 / 60) % 60;
+        return "" + min;
+    }
+
     public static String getWeekdayName(long dateMillis) {
         LocalDate date = new LocalDate(dateMillis);
         return date.dayOfWeek().getAsText();
