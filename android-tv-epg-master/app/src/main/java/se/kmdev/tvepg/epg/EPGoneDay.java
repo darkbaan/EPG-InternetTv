@@ -39,6 +39,7 @@ public class EPGoneDay extends ViewGroup {
     public static final int END_TIME = 24 * 60 * 60 * 1000;     // 24H
     public static final int HOURS_IN_VIEWPORT_MILLIS = 2 * 60 * 60 * 1000;     // 2 hours
     public static final int TIME_LABEL_SPACING_MILLIS = 30 * 60 * 1000;        // 30 minutes
+    public static final int TIME_SPACING_MILLIS = 15 * 60 * 1000; // 15 MINUTES
 
     private final Rect mClipRect;
     private final Rect mDrawingRect;
@@ -208,9 +209,27 @@ public class EPGoneDay extends ViewGroup {
                     (((mTimeLowerBoundary + (TIME_LABEL_SPACING_MILLIS * i)) +
                             (TIME_LABEL_SPACING_MILLIS / 2)) / TIME_LABEL_SPACING_MILLIS);
 
-            canvas.drawText(EPGUtil.getShortTime(time),
+            canvas.drawText(" " + EPGUtil.getShortTime(time),
                     getXFrom(time),
                     drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)), mPaint);
+        }
+
+        for (int i = 0; i < HOURS_IN_VIEWPORT_MILLIS / TIME_SPACING_MILLIS; i++) {
+            // Get time and round to nearest half hour
+            final long time = TIME_SPACING_MILLIS *
+                    (((mTimeLowerBoundary + (TIME_SPACING_MILLIS * i)) +
+                            (TIME_SPACING_MILLIS / 2)) / TIME_SPACING_MILLIS);
+
+            if (time % TIME_LABEL_SPACING_MILLIS == 0) {
+                canvas.drawText("|",
+                        getXFrom(time),
+                        drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(12), mPaint);
+            } else {
+
+                canvas.drawText("|",
+                        getXFrom(time),
+                        drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(18), mPaint);
+            }
         }
 
         canvas.restore();
@@ -454,7 +473,7 @@ public class EPGoneDay extends ViewGroup {
     }
 
     private void calculateMaxHorizontalScroll() {
-        mMaxHorizontalScroll = (int) ((END_TIME / mMillisPerPixel) - getWidth() + mChannelLayoutWidth);
+        mMaxHorizontalScroll = (int) ((END_TIME / mMillisPerPixel) - getWidth() + mChannelLayoutWidth + dptopx(15));
     }
 
     private void calculateMaxVerticalScroll() {
