@@ -4,7 +4,7 @@
     <color name="epg_channel_layout_background">#d1d1d1</color>
     <color name="epg_event_layout_background_current">#b7b7b7</color>
     <color name="epg_event_layout_text_current">#ffffff</color>
-    <color name="epg_event_layout_time_text_current">#d8d8d8</color>
+    <color name="epg_event_layout_time_text_current">#f0f0f0</color>
     <color name="epg_event_layout_background">#f1f1f1</color>
     <color name="epg_event_layout_text">#727272</color>
     <color name="epg_event_layout_time_text">#a6a6a6</color>
