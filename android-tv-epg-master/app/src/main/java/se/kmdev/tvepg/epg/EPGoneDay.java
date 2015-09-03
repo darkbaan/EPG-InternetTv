@@ -106,7 +106,7 @@ public class EPGoneDay extends ViewGroup {
 
         // Adding some friction that makes the epg less flappy.
         mScroller = new Scroller(context);
-        mScroller.setFriction(0.2f);
+        mScroller.setFriction(0.1f);
 
         mEPGBackground = getResources().getColor(R.color.epg_background);
         mTimeLayoutColor = getResources().getColor(R.color.epg_time_line_color);

@@ -10,8 +10,6 @@ import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import org.joda.time.LocalDate;
-
 /**
  * Created by Kristoffer.
  */
@@ -35,11 +33,6 @@ public class EPGUtil {
     public static String getShortMin(long timeMillis) {
         int min = (int) (timeMillis / 1000 / 60) % 60;
         return "" + min;
-    }
-
-    public static String getWeekdayName(long dateMillis) {
-        LocalDate date = new LocalDate(dateMillis);
-        return date.dayOfWeek().getAsText();
     }
 
     public static void loadImageInto(Context context, String url, int width, int height, Target target) {
