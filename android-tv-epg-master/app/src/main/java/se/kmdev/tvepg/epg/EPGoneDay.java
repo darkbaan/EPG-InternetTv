@@ -208,7 +208,7 @@ public class EPGoneDay extends ViewGroup {
         // Time stamps
         mPaint.setColor(mEventLayoutTextColor);
 
-        for (int i = 0; i < HOURS_IN_VIEWPORT_MILLIS / TIME_SPACING_MILLIS; i++) {
+        for (int i = 0; i < (HOURS_IN_VIEWPORT_MILLIS / TIME_SPACING_MILLIS) + 1; i++) {
             // Get time and round to nearest half hour
             final long time = TIME_SPACING_MILLIS *
                     (((mTimeLowerBoundary + (TIME_SPACING_MILLIS * i)) +
@@ -221,10 +221,10 @@ public class EPGoneDay extends ViewGroup {
                         drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(12), mPaint);
 
                 canvas.drawText(EPGUtil.getShortHour(time),
-                        getXFrom(time) - dptopx(2),
+                        getXFrom(time) - dptopx(6),
                         drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) + dptopx(4), mPaint);
             } else {
-                mPaint.setTextSize(0.8f*mTimeBarTextSize);
+                mPaint.setTextSize(0.8f * mTimeBarTextSize);
                 canvas.drawText("|",
                         getXFrom(time) - dptopx(2),
                         drawingRect.top + (((drawingRect.bottom - drawingRect.top) / 2) + (mTimeBarTextSize / 2)) - dptopx(18), mPaint);
@@ -279,35 +279,36 @@ public class EPGoneDay extends ViewGroup {
 
     private void drawEvents(Canvas canvas, Rect drawingRect) {
         final int firstPos = getFirstVisibleChannelPosition();
-        final int lastPos = getLastVisibleChannelPosition();
+        final int lastPos = getLastVisibleChannelPosition() + 2;
 
-        for (int pos = firstPos; pos < lastPos; pos++) {
+        for (int pos = firstPos; pos < lastPos; pos++)
+            if (pos < epgData.getChannelCount()) {
 
-            // Set clip rectangle
-            mClipRect.left = getScrollX() + mChannelLayoutWidth + mChannelLayoutMargin;
-            mClipRect.top = getTopFrom(pos);
-            mClipRect.right = getScrollX() + getWidth();
-            mClipRect.bottom = mClipRect.top + mChannelLayoutHeight;
+                // Set clip rectangle
+                mClipRect.left = getScrollX() + mChannelLayoutWidth + mChannelLayoutMargin;
+                mClipRect.top = getTopFrom(pos);
+                mClipRect.right = getScrollX() + getWidth();
+                mClipRect.bottom = mClipRect.top + mChannelLayoutHeight;
 
-            canvas.save();
-            canvas.clipRect(mClipRect);
+                canvas.save();
+                canvas.clipRect(mClipRect);
 
-            // Draw each event
-            boolean foundFirst = false;
+                // Draw each event
+                boolean foundFirst = false;
 
-            List<EPGEvent> epgEvents = epgData.getEvents(pos);
+                List<EPGEvent> epgEvents = epgData.getEvents(pos);
 
-            for (EPGEvent event : epgEvents) {
-                if (isEventVisible(event.getStart(), event.getEnd())) {
-                    drawEvent(canvas, pos, event, drawingRect);
-                    foundFirst = true;
-                } else if (foundFirst) {
-                    break;
+                for (EPGEvent event : epgEvents) {
+                    if (isEventVisible(event.getStart(), event.getEnd())) {
+                        drawEvent(canvas, pos, event, drawingRect);
+                        foundFirst = true;
+                    } else if (foundFirst) {
+                        break;
+                    }
                 }
-            }
 
-            canvas.restore();
-        }
+                canvas.restore();
+            }
 
     }
 
@@ -364,9 +365,10 @@ public class EPGoneDay extends ViewGroup {
         mPaint.setColor(mChannelLayoutBackground);
         canvas.drawRect(mMeasuringRect, mPaint);
 
-        for (int pos = getFirstVisibleChannelPosition(); pos < getLastVisibleChannelPosition(); pos++) {
-            drawChannelItem(canvas, pos, drawingRect);
-        }
+        for (int pos = getFirstVisibleChannelPosition(); pos < getLastVisibleChannelPosition() + 2; pos++)
+            if (pos < epgData.getChannelCount()) {
+                drawChannelItem(canvas, pos, drawingRect);
+            }
     }
 
     private void drawChannelItem(final Canvas canvas, int position, Rect drawingRect) {
@@ -467,23 +469,23 @@ public class EPGoneDay extends ViewGroup {
         final int y = getScrollY();
         final int totalChannelCount = epgData.getChannelCount();
         final int screenHeight = getHeight();
-        int position = (y + screenHeight + mTimeBarHeight - mChannelLayoutMargin)
+        int position = (y + screenHeight - mTimeBarHeight - mChannelLayoutMargin)
                 / (mChannelLayoutHeight + mChannelLayoutMargin);
 
-        if (position > totalChannelCount) {
-            position = totalChannelCount;
+        if (position > totalChannelCount - 1) {
+            position = totalChannelCount - 1;
         }
 
         // Add one extra row if we don't fill screen with current..
-        return (y + screenHeight) > (position * mChannelLayoutHeight) && position < totalChannelCount - 1 ? position + 1 : position;
+        return (y + screenHeight) > (position * (mChannelLayoutHeight + mChannelLayoutMargin)) && position < totalChannelCount - 1 ? position + 1 : position;
     }
 
     private void calculateMaxHorizontalScroll() {
-        mMaxHorizontalScroll = (int) ((END_TIME / mMillisPerPixel) - getWidth() + mChannelLayoutWidth + dptopx(15));
+        mMaxHorizontalScroll = (int) ((END_TIME / mMillisPerPixel) - getWidth() + mChannelLayoutWidth + mChannelLayoutMargin);
     }
 
     private void calculateMaxVerticalScroll() {
-        final int maxVerticalScroll = getTopFrom(epgData.getChannelCount() - 2) + mChannelLayoutHeight;
+        final int maxVerticalScroll = getTopFrom(epgData.getChannelCount() - 1) + mChannelLayoutHeight;
         mMaxVerticalScroll = maxVerticalScroll < getHeight() ? 0 : maxVerticalScroll - getHeight();
     }
 
@@ -604,6 +606,10 @@ public class EPGoneDay extends ViewGroup {
         mChannelImageCache.clear();
     }
 
+    private float dptopx(int dp) {
+        Resources r = getResources();
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
+    }
 
     private class OnGestureListener extends GestureDetector.SimpleOnGestureListener {
 
@@ -681,11 +687,6 @@ public class EPGoneDay extends ViewGroup {
             }
             return true;
         }
-    }
-
-    private float dptopx(int dp) {
-        Resources r = getResources();
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
     }
 
 }

@@ -9,6 +9,6 @@
     <color name="epg_event_layout_text">#727272</color>
     <color name="epg_event_layout_time_text">#a6a6a6</color>
     <color name="epg_time_line_color">@color/white</color>
-    <color name="epg_time_bar">#f36523</color>
+    <color name="epg_time_bar">#80f36523</color>
     <color name="white">#ffffff</color>
 </resources>

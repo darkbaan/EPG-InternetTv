@@ -11,8 +11,6 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Created by Kristoffer.
@@ -29,7 +27,9 @@ public class EPGUtil {
 
     public static String getShortHour(long timeMillis) {
         int hour = (int) (timeMillis / 1000 / 60 / 60) % 24;
-        return hour + "h";
+        if (hour != 0)
+            return hour + "h";
+        return "  " + hour + "h";
     }
 
     public static String getShortMin(long timeMillis) {
